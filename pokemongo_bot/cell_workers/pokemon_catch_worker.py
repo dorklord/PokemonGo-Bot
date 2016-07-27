@@ -27,6 +27,12 @@ class PokemonCatchWorker(object):
     def work(self):
 
         encounter_id = self.pokemon['encounter_id']
+        spawn_point_id = self.pokemon['spawn_point_id']
+        player_latitude = self.pokemon['latitude']
+        player_longitude = self.pokemon['longitude']
+        self.api.encounter(encounter_id=encounter_id, spawn_point_id=spawn_point_id,
+                           player_latitude=player_latitude, player_longitude=player_longitude)
+        response_dict = self.api.call()
 
         response_dict = self.create_encounter_api_call()
 
@@ -175,12 +181,12 @@ class PokemonCatchWorker(object):
                                                    NormalizedHitPosition=1)
                             response_dict = self.api.call()
 
+                            #{'responses': {'CATCH_POKEMON': {}}, TODO fix empty dict
                             if response_dict and \
                                 'responses' in response_dict and \
                                 'CATCH_POKEMON' in response_dict['responses'] and \
-                                    'status' in response_dict['responses']['CATCH_POKEMON']:
-                                status = response_dict['responses'][
-                                    'CATCH_POKEMON']['status']
+                                'status_code' in response_dict['responses']['CATCH_POKEMON']:
+                                status = response_dict['responses']['CATCH_POKEMON']['status_code']
                                 if status is 2:
                                     logger.log(
                                         '[-] Attempted to capture {} - failed.. trying again!'.format(pokemon_name), 'red')
@@ -390,12 +396,12 @@ class PokemonCatchWorker(object):
         player_latitude = self.pokemon['latitude']
         player_longitude = self.pokemon['longitude']
 
-        if 'spawnpoint_id' in self.pokemon:
-            spawnpoint_id = self.pokemon['spawnpoint_id']
-            self.spawn_point_guid = spawnpoint_id
+        if 'spawn_point_id' in self.pokemon:
+            spawn_point_id = self.pokemon['spawn_point_id']
+            self.spawn_point_guid = spawn_point_id
             self.response_key = 'ENCOUNTER'
             self.response_status_key = 'status'
-            self.api.encounter(encounter_id=encounter_id, spawn_point_id=spawnpoint_id,
+            self.api.encounter(encounter_id=encounter_id, spawn_point_id=spawn_point_id,
                                player_latitude=player_latitude, player_longitude=player_longitude)
         else:
             fort_id = self.pokemon['fort_id']
